@@ -29,20 +29,16 @@ module "vpc" {
 
 }
 
-module "eks_managed_node_group" {
-  source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+module "eks" {
+  source = "terraform-aws-modules/eks/aws"
 
-  name            = "separate-eks-mng" //Anuj
   cluster_name    = "my-eks-cluster"
   cluster_version = "1.28"
-
-  cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  vpc_security_group_ids            = [module.eks.node_security_group_id]
 
   cluster_endpoint_public_access = true
 
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = module.vpc.public_subnets
 
   eks_managed_node_groups = {
     nodes = {
