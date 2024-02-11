@@ -1,7 +1,7 @@
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "jenkins-vpc"
+  name = "eks-vpc"
   cidr = var.vpc_cidr
 
   azs = data.aws_availability_zones.azs.names
@@ -29,11 +29,15 @@ module "vpc" {
 
 }
 
-module "eks" {
-  source = "terraform-aws-modules/eks/aws"
+module "eks_managed_node_group" {
+  source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
+  name            = "separate-eks-mng" //Anuj
   cluster_name    = "my-eks-cluster"
-  cluster_version = "1.24"
+  cluster_version = "1.28"
+
+  cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
+  vpc_security_group_ids            = [module.eks.node_security_group_id]
 
   cluster_endpoint_public_access = true
 
@@ -44,9 +48,9 @@ module "eks" {
     nodes = {
       min_size     = 1
       max_size     = 3
-      desired_size = 2
+      desired_size = 1
 
-      instance_type = ["t2.small"]
+      instance_type = ["t2.medium"]
     }
   }
 
